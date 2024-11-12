@@ -104,9 +104,24 @@ def spread(pile):
     else:
         return " "
 
+def digits(num):
+    digits = str(num)
+    if len(digits) == 1:
+        return f"0{digits}"
+    else:
+        return digits
+
 try:
+    print("")
     elapsed_time = 0
+    start_time = time.time()
     while True:
+        frame = int(time.time() - start_time)
+        seconds = frame % 60
+        minutes = frame // 60
+        hours = minutes % 60
+        time_stamp = f"{fg(61)}{digits(hours)}:{digits(minutes)}:{digits(seconds)}{RESET}"
+
         pending = []
         for voice in range(voices):
             status[voice] -= elapsed_time
@@ -129,14 +144,14 @@ try:
             #hand_part = spread([n for n in active if n > -1])
             hand_part = spread(underline_new(active, voice))
             deck_part = spread(colorize_r(deck, [118, 76, 34, 28, 22]))
-            print(" " + f"{discard_part}{RESET}⌜{hand_part}⌟{deck_part}".strip() + RESET)
-            #print(" " + f"{discard_part}{RESET}⌜{BOLD}{fg(15)}{hand_part}{RESET}⌟{deck_part}".strip() + RESET)
+            print(f"    {time_stamp}    " + f"{discard_part}{RESET}⌜{hand_part}⌟{deck_part}".strip() + RESET)
+            #print("" + f"{discard_part}{RESET}⌜{BOLD}{fg(15)}{hand_part}{RESET}⌟{deck_part}".strip() + RESET)
 
             event = NoteOnEvent(note=draw, velocity=randint(96, 127))
             client.event_output(event, port=port)
 
             if len(deck) == 0:
-                print(f"{ITALIC}reshuffling{RESET}")
+                print(f"                {ITALIC}reshuffling{RESET}")
                 deck = discard
                 discard = []
                 shuffle(deck)
@@ -144,7 +159,7 @@ try:
         client.drain_output()
 
         elapsed_time = min(status)
-        print(f"{fg(4)}{ITALIC}Zzz{RESET}{fg(4)} ({elapsed_time} seconds){RESET}")
+        print(f"                {fg(4)}{ITALIC}Zzz{RESET}{fg(4)} ({elapsed_time} seconds){RESET}")
         time.sleep(elapsed_time)
 
 
