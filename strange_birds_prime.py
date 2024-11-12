@@ -64,7 +64,7 @@ if not connection:
 
 
 voices = 4
-primes = [19, 41, 83, 167]
+primes = [19, 41, 83, 167] # note that the patch's envelope usually takes about 34 seconds to drain out when a note is held
 status = [p - primes[0] for p in primes]
 active = [-1, -1, -1, -1]
 
