@@ -119,7 +119,7 @@ try:
         frame = int(time.time() - start_time)
         seconds = frame % 60
         minutes = frame // 60
-        hours = minutes % 60
+        hours = (minutes // 60) % 100
         time_stamp = f"{fg(61)}{digits(hours)}:{digits(minutes)}:{digits(seconds)}{RESET}"
 
         pending = []
