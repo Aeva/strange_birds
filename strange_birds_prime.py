@@ -3,6 +3,7 @@ import time
 import subprocess
 from random import shuffle, randint
 from alsa_midi import SequencerClient, WRITE_PORT, READ_PORT, NoteOnEvent, NoteOffEvent, ProgramChangeEvent
+from ascii import *
 
 
 if False:
@@ -77,9 +78,29 @@ for i in range(len(deck)):
 
 discard = []
 
+def colorize(notes, pallet):
+    return [f"{fg(color)}{note}" for note, color in zip(notes, pallet)]
+
+def colorize_l(notes, pallet):
+    pallet = ([pallet[0]] * max(len(notes) - len(pallet), 0)) + pallet
+    return colorize(notes, pallet[-len(notes):])
+
+def colorize_r(notes, pallet):
+    return colorize(notes, pallet + ([pallet[-1]] * max(len(notes) - len(pallet), 0)))
+
+def underline_new(notes, cursor):
+    hand = []
+    for i, note in enumerate(notes):
+        if note > -1:
+            if i == cursor:
+                hand.append(f"{UNDER}{BOLD}{fg(15)}{note}{RESET}")
+            else:
+                hand.append(f"{BOLD}{fg(231)}{note}{RESET}")
+    return hand
+
 def spread(pile):
     if pile:
-        return f" {'·'.join(map(str, [i for i in pile if i > -1]))} "
+        return f" {'·'.join(map(str, pile))} "
     else:
         return " "
 
@@ -103,13 +124,19 @@ try:
         for voice in pending:
             draw = deck.pop(0)
             active[voice] = draw
-            print(" " + f"{spread(discard)}⌜{spread(active)}⌟{spread(deck)}".strip())
+
+            discard_part = spread(colorize_l(discard, [238, 240, 242, 244]))
+            #hand_part = spread([n for n in active if n > -1])
+            hand_part = spread(underline_new(active, voice))
+            deck_part = spread(colorize_r(deck, [118, 76, 34, 28, 22]))
+            print(" " + f"{discard_part}{RESET}⌜{hand_part}⌟{deck_part}".strip() + RESET)
+            #print(" " + f"{discard_part}{RESET}⌜{BOLD}{fg(15)}{hand_part}{RESET}⌟{deck_part}".strip() + RESET)
 
             event = NoteOnEvent(note=draw, velocity=randint(96, 127))
             client.event_output(event, port=port)
 
             if len(deck) == 0:
-                print("reshuffling")
+                print(f"{ITALIC}reshuffling{RESET}")
                 deck = discard
                 discard = []
                 shuffle(deck)
@@ -117,7 +144,7 @@ try:
         client.drain_output()
 
         elapsed_time = min(status)
-        print(f"Zzz ({elapsed_time} seconds)")
+        print(f"{fg(4)}{ITALIC}Zzz{RESET}{fg(4)} ({elapsed_time} seconds){RESET}")
         time.sleep(elapsed_time)
 
 
